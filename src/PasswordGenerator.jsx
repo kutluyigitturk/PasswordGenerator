@@ -1,40 +1,84 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 
 // ═══════════════════════════════════════════════════════════
-// ADIM 1: Arka Plan & Tema Sistemi
+// TEMA — Mono (21st.dev) dark mode, teal accent
 // ═══════════════════════════════════════════════════════════
 
-// Tema renkleri — tüm renkler burada tanımlı, değiştirmesi kolay
-const themes = {
-  dark: {
-    bg: "#0a0e17",           // Sayfa arka planı
-    cardBg: "#111827",       // Kart arka planı
-    cardBorder: "#1e293b",   // Kart çerçeve rengi
-    text: "#f1f5f9",         // Ana metin rengi
-    textMuted: "#64748b",    // Soluk metin rengi
-    accent: "#14b8a6",       // Vurgu rengi (teal)
-    accentGlow: "rgba(20, 184, 166, 0.15)", // Vurgu glow efekti
-  },
-  light: {
-    bg: "#f1f5f9",
-    cardBg: "#ffffff",
-    cardBorder: "#e2e8f0",
-    text: "#0f172a",
-    textMuted: "#64748b",
-    accent: "#0d9488",
-    accentGlow: "rgba(13, 148, 136, 0.1)",
-  },
+const t = {
+  bg: "#0a0a0a",              // --background
+  cardBg: "#191919",           // --card
+  cardFg: "#fafafa",           // --card-foreground
+  border: "#262626",           // ince, neredeyse görünmez border
+  input: "#262626",            // --input alanları
+  muted: "#262626",            // --muted arka plan
+  mutedFg: "#a1a1a1",          // --muted-foreground
+  text: "#fafafa",             // --foreground
+  accent: "#404040",           // Teal accent
+  accentFg: "#fafafa",
+  primary: "#737373",          // --primary (gri)
+  primaryFg: "#fafafa",        // --primary-foreground
+  secondary: "#262626",        // --secondary
+  secondaryFg: "#fafafa",      // --secondary-foreground
 };
 
-export default function PasswordGenerator() {
-  // Dark tema varsayılan olarak açık
-  const [isDark, setIsDark] = useState(true);
+// Üretim modları
+const modes = [
+  { key: "random", label: "Random" },
+  { key: "pronounceable", label: "Pronounceable" },
+  { key: "passphrase", label: "Passphrase" },
+];
 
-  // Aktif temayı seç
-  const t = isDark ? themes.dark : themes.light;
+export default function PasswordGenerator() {
+  const [mode, setMode] = useState("random");
+  const [password, setPassword] = useState("");
+  const [displayPw, setDisplayPw] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const animRef = useRef(null);
+
+  // Şifre üretme fonksiyonu (şimdilik sadece random)
+  const generate = useCallback(() => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    const len = 16;
+    const newPw = Array.from({ length: len }, () =>
+      chars[Math.floor(Math.random() * chars.length)]
+    ).join("");
+
+    // Rolling animasyon
+    setAnimating(true);
+    let frame = 0;
+    const maxFrames = 10;
+    if (animRef.current) clearInterval(animRef.current);
+
+    animRef.current = setInterval(() => {
+      frame++;
+      if (frame >= maxFrames) {
+        clearInterval(animRef.current);
+        setDisplayPw(newPw);
+        setPassword(newPw);
+        setAnimating(false);
+        return;
+      }
+      // Her frame'de biraz daha fazla gerçek karakter göster
+      const revealed = Math.floor((frame / maxFrames) * newPw.length);
+      const scrambled =
+        newPw.slice(0, revealed) +
+        Array.from({ length: newPw.length - revealed }, () =>
+          chars[Math.floor(Math.random() * chars.length)]
+        ).join("");
+      setDisplayPw(scrambled);
+    }, 40);
+  }, []);
+
+  // Kopyalama fonksiyonu
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(password).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  }, [password]);
 
   return (
-    // ── Sayfa Arka Planı ──
     <div
       style={{
         minHeight: "100vh",
@@ -43,7 +87,8 @@ export default function PasswordGenerator() {
         justifyContent: "center",
         alignItems: "flex-start",
         padding: "60px 16px",
-        transition: "background 0.4s ease",
+        fontFamily: "'Geist Mono', monospace",
+        color: t.text,
       }}
     >
       {/* ── Ana Kart ── */}
@@ -52,87 +97,148 @@ export default function PasswordGenerator() {
           width: "100%",
           maxWidth: 440,
           background: t.cardBg,
-          border: `1px solid ${t.cardBorder}`,
-          borderRadius: 16,
-          padding: "32px 28px",
-          boxShadow: `0 4px 24px rgba(0, 0, 0, ${isDark ? 0.4 : 0.08})`,
-          transition: "all 0.4s ease",
+          border: `1px solid ${t.border}`,
+          borderRadius: 8,
+          padding: "32px 24px",
         }}
       >
-        {/* ── Header: Başlık + Tema Toggle ── */}
+        {/* ── Header ── */}
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 18,
+              fontWeight: 600,
+              color: t.cardFg,
+              fontFamily: "inherit",
+            }}
+          >
+            Password Generator
+          </h1>
+          <p
+            style={{
+              margin: "8px 0 0",
+              fontSize: 12,
+              color: t.mutedFg,
+              fontFamily: "inherit",
+            }}
+          >
+            Generate secure, random passwords
+          </p>
+        </div>
+
+        {/* ── Mod Sekmeleri ── */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
+            background: t.muted,
+            borderRadius: 6,
+            padding: 2,
+            border: `1px solid ${t.border}`,
           }}
         >
-          {/* Sol: Başlık */}
-          <div>
-            <h1
+          {modes.map((m) => (
+            <button
+              key={m.key}
+              onClick={() => setMode(m.key)}
               style={{
-                margin: 0,
-                fontSize: 22,
-                fontWeight: 700,
-                color: t.text,
-                letterSpacing: "-0.02em",
-                fontFamily: "'Outfit', sans-serif",
+                flex: 1,
+                padding: "8px 0",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                fontSize: 11,
+                fontWeight: 500,
+                fontFamily: "inherit",
+                transition: "all 0.15s ease",
+                background: mode === m.key ? t.accent : "transparent",
+                color: mode === m.key ? t.accentFg : t.mutedFg,
               }}
             >
-              Password Generator
-            </h1>
-            <p
-              style={{
-                margin: "4px 0 0",
-                fontSize: 13,
-                color: t.textMuted,
-                fontFamily: "'Outfit', sans-serif",
-              }}
-            >
-              Generate secure, random passwords
-            </p>
-          </div>
-
-          {/* Sağ: Dark/Light Toggle */}
-          <button
-            onClick={() => setIsDark(!isDark)}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              border: `1px solid ${t.cardBorder}`,
-              background: isDark ? "#1e293b" : "#f8fafc",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              transition: "all 0.3s ease",
-            }}
-          >
-            {isDark ? "☀️" : "🌙"}
-          </button>
+              {m.label}
+            </button>
+          ))}
         </div>
 
-        {/* ── Buraya adım adım yeni bölümler ekleyeceğiz ── */}
+        {/* ── Şifre Gösterim Kutusu ── */}
         <div
           style={{
-            marginTop: 28,
-            padding: "40px 0",
-            textAlign: "center",
-            color: t.textMuted,
-            fontSize: 13,
-            fontFamily: "'Outfit', sans-serif",
-            borderTop: `1px solid ${t.cardBorder}`,
+            marginTop: 20,
+            padding: "16px",
+            background: t.bg,
+            border: `1px solid ${t.border}`,
+            borderRadius: 6,
+            minHeight: 52,
+            display: "flex",
+            alignItems: "center",
           }}
         >
-          Sonraki adım: Mod sekmeleri gelecek buraya
+          <span
+            style={{
+              fontFamily: "inherit",
+              fontSize: 14,
+              fontWeight: 500,
+              color: animating ? t.mutedFg : t.text,
+              wordBreak: "break-all",
+              letterSpacing: "0.02em",
+              lineHeight: 1.6,
+              transition: "color 0.2s ease",
+            }}
+          >
+            {displayPw || "Click Generate to create a password"}
+          </span>
+        </div>
+
+        {/* ── Butonlar ── */}
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            marginTop: 12,
+          }}
+        >
+          <button
+            onClick={generate}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: `1px solid ${t.border}`,
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              background: t.cardFg,
+              color: t.bg,
+              transition: "opacity 0.15s ease",
+            }}
+          >
+            Generate
+          </button>
+          <button
+            onClick={copy}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              border: `1px solid ${t.border}`,
+              borderRadius: 6,
+              cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 600,
+              fontFamily: "inherit",
+              background: "transparent",
+              color: t.mutedFg,
+              transition: "all 0.15s ease",
+            }}
+          >
+            {copied ? "Copied!" : "Copy"}
+          </button>
         </div>
       </div>
 
-      {/* ── Google Fonts ── */}
+      {/* ── Geist Mono Font ── */}
       <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap"
         rel="stylesheet"
       />
     </div>
