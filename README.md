@@ -1,6 +1,10 @@
 <div align="center">
 
-# 🔑 Password Generator
+<div align="center">
+
+<img src="assets/icon.svg" alt="icon" width="48" height="48" />
+
+# Password Generator
 
 **A secure, feature-rich password generator with real-time strength analysis, multi-mode generation, and a clean Mono UI.**
 
