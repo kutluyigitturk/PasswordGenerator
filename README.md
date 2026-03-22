@@ -1,15 +1,12 @@
 <div align="center">
 
-<div align="center">
-
 <img src="assets/icon.svg" alt="icon" width="48" height="48" />
 
 # Password Generator
 
 **A secure, feature-rich password generator with real-time strength analysis, multi-mode generation, and a clean Mono UI.**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-blue?style=for-the-badge)](https://kutluyigitturk.github.io/PasswordGenerator/)
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github)](https://github.com/kutluyigitturk/PasswordGenerator)
+[![Try It Live](https://img.shields.io/badge/▶_Try_It_Live-4CAF50?style=for-the-badge)](https://kutluyigitturk.github.io/PasswordGenerator/)
 
 </div>
 
@@ -48,19 +45,24 @@
 ## 🔧 How It Works
 
 ### Entropy Calculation
+
 ```
 Pool Size = (26 if lowercase) + (26 if uppercase) + (10 if digits) + (33 if symbols)
 Entropy = Password Length × log₂(Pool Size)
 ```
 
 ### Crack Time Estimation
+
 ```
 Seconds = 2^entropy / 10,000,000,000 (10 billion attempts/sec)
 ```
+
 Then converted to human-readable format (seconds → minutes → hours → days → years → centuries).
 
 ### Similarity Score
+
 Uses **Levenshtein distance** — counts the minimum single-character edits (insertions, deletions, substitutions) needed to change one password into another:
+
 ```
 Similarity% = (1 - levenshtein(a, b) / max(a.length, b.length)) × 100
 ```
