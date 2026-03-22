@@ -48,3 +48,39 @@ export function generatePronounceable(len) {
 
   return result.slice(0, len);
 }
+
+const EN_WORDS = [
+  "alpine","beacon","canyon","dagger","eclipse","falcon","glacier","harbor",
+  "inferno","jungle","kindle","lagoon","meadow","nebula","oracle","phantom",
+  "quasar","raptor","summit","tempest","umbra","vortex","wildfire","zenith",
+  "anchor","blizzard","cascade","dynamo","enigma","fortress","granite","horizon",
+  "impulse","javelin","kraken","lantern","monsoon","nimbus","outpost","pioneer",
+  "radiant","saffron","thunder","venture","whisper","crimson","azure","bronze",
+  "cedar","dusk","ember","fossil","glimmer","hollow","iris","jasper","kelp",
+  "lotus","marble","nomad","opal","python","raven","sphinx","tundra","violet"
+];
+
+const TR_WORDS = [
+  "deniz","bulut","yildiz","orman","nehir","daglar","gunes","ruzgar","cicek",
+  "kus","ates","toprak","yaprak","kelebek","aslan","kartal","bahar","yagmur",
+  "safak","mehtap","umut","dunya","baris","cesur","ozgur","mutlu","guzel",
+  "parlak","hizli","sakin","tatli","serin","yesil","mavi","altin","gumus",
+  "elmas","kaplan","yunus","penguen","kurt","tilki","cinar","lale","mercan",
+  "amber","ipek","firtina","sema","derin","akarsu","volkan","kaynak","petek",
+  "zeytin","bulbul","mermer","safir","sedef","hilal","pinar","doruk","irmak"
+];
+
+export function generatePassphrase(opts) {
+  const bank = opts.lang === "tr" ? TR_WORDS : EN_WORDS;
+  let words = Array.from({ length: opts.wordCount }, () =>
+    bank[Math.floor(Math.random() * bank.length)]
+  );
+  if (opts.capitalize) {
+    words = words.map((w) => w[0].toUpperCase() + w.slice(1));
+  }
+  let result = words.join(opts.separator);
+  if (opts.addNumber) {
+    result += opts.separator + Math.floor(Math.random() * 100);
+  }
+  return result;
+}

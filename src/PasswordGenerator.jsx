@@ -4,8 +4,9 @@ import { calcEntropy, getCrackTime, getStrength } from "./utils/strength";
 import PasswordDisplay from "./components/PasswordDisplay";
 import StrengthBar from "./components/StrengthBar";
 import RandomMode from "./components/RandomMode";
-import { generateRandom, generatePronounceable } from "./utils/generators";
+import { generateRandom, generatePronounceable, generatePassphrase } from "./utils/generators";
 import PronounceableMode from "./components/PronounceableMode";
+import PassphraseMode from "./components/PassphraseMode";
 
 // ═══════════════════════════════════════════════════════════
 // PASSWORD MODES
@@ -44,6 +45,14 @@ export default function PasswordGenerator() {
 
   const [pronounceableSettings, setPronounceableSettings] = useState({
     length: 12,
+  });
+
+  const [passphraseSettings, setPassphraseSettings] = useState({
+    wordCount: 4,
+    separator: "-",
+    capitalize: true,
+    addNumber: true,
+    lang: "en",
   });
 
   const txt = translations[lang];
@@ -100,6 +109,9 @@ export default function PasswordGenerator() {
     }
     if (mode === "pronounceable") {
       newPw = generatePronounceable(pronounceableSettings.length);
+    }
+    if (mode === "passphrase") {
+      newPw = generatePassphrase(passphraseSettings);
     }
 
     // Rolling animation
@@ -432,9 +444,12 @@ export default function PasswordGenerator() {
         )}
 
         {mode === "passphrase" && (
-          <div style={{ padding: "20px 0", textAlign: "center", color: t.mutedFg, fontSize: 12 }}>
-            Passphrase mode coming soon...
-          </div>
+          <PassphraseMode
+            settings={passphraseSettings}
+            setSettings={setPassphraseSettings}
+            txt={txt}
+            theme={t}
+          />
         )}
       </div>
 
