@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { translations } from "./utils/translations";
-import { generateRandom } from "./utils/generators";
 import { calcEntropy, getCrackTime, getStrength } from "./utils/strength";
 import PasswordDisplay from "./components/PasswordDisplay";
 import StrengthBar from "./components/StrengthBar";
 import RandomMode from "./components/RandomMode";
+import { generateRandom, generatePronounceable } from "./utils/generators";
+import PronounceableMode from "./components/PronounceableMode";
 
 // ═══════════════════════════════════════════════════════════
 // PASSWORD MODES
@@ -39,6 +40,10 @@ export default function PasswordGenerator() {
     symbols: true,
     excludeSimilar: false,
     mustContain: true,
+  });
+
+  const [pronounceableSettings, setPronounceableSettings] = useState({
+    length: 12,
   });
 
   const txt = translations[lang];
@@ -93,7 +98,9 @@ export default function PasswordGenerator() {
     if (mode === "random") {
       newPw = generateRandom(randomSettings.length, randomSettings);
     }
-    // pronounceable and passphrase will be added later
+    if (mode === "pronounceable") {
+      newPw = generatePronounceable(pronounceableSettings.length);
+    }
 
     // Rolling animation
     const chars =
@@ -416,9 +423,12 @@ export default function PasswordGenerator() {
         )}
 
         {mode === "pronounceable" && (
-          <div style={{ padding: "20px 0", textAlign: "center", color: t.mutedFg, fontSize: 12 }}>
-            Pronounceable mode coming soon...
-          </div>
+          <PronounceableMode
+            settings={pronounceableSettings}
+            setSettings={setPronounceableSettings}
+            txt={txt}
+            theme={t}
+          />
         )}
 
         {mode === "passphrase" && (

@@ -34,6 +34,7 @@ export const translations = {
     centuries: "centuries",
     kCenturies: "K centuries",
     beyondLifetime: "Beyond universe lifetime",
+    pronounceableHint: "Generates readable passwords using consonant-vowel patterns. Use longer lengths for better security.",
   },
   tr: {
     title: "Şifre Oluşturucu",
@@ -70,5 +71,6 @@ export const translations = {
     centuries: "yüzyıl",
     kCenturies: "K yüzyıl",
     beyondLifetime: "Evrenin ömründen uzun",
+    pronounceableHint: "Sessiz-sesli harf kalıplarıyla okunabilir şifreler üretir. Güvenlik için uzun tutmanız önerilir.",
   },
 };

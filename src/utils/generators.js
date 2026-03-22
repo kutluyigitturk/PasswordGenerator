@@ -33,3 +33,18 @@ export function generateRandom(len, opts) {
   );
   return result;
 }
+
+export function generatePronounceable(len) {
+  const consonants = "bcdfghjklmnprstvwz";
+  const vowels = "aeiou";
+  let result = "";
+  let useConsonant = true;
+
+  while (result.length < len) {
+    const pool = useConsonant ? consonants : vowels;
+    result += pool[Math.floor(Math.random() * pool.length)];
+    useConsonant = !useConsonant;
+  }
+
+  return result.slice(0, len);
+}
