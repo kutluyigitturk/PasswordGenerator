@@ -11,6 +11,8 @@
 
 ---
 
+<div align="center">
+
 ## 🛠️ Tech Stack
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
@@ -18,6 +20,8 @@
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-222222?style=for-the-badge&logo=githubpages&logoColor=white)
+
+</div>
 
 ---
 
@@ -71,22 +75,34 @@ Similarity% = (1 - levenshtein(a, b) / max(a.length, b.length)) × 100
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── PasswordDisplay.jsx     → Password output box with rolling animation
-│   ├── RandomMode.jsx          → Length slider + character toggles
-│   ├── PronounceableMode.jsx   → Length slider + hint text
-│   ├── PassphraseMode.jsx      → Word count, separator, language, toggles
-│   ├── StrengthBar.jsx         → Color-coded bar + entropy + crack time
-│   ├── RecentSection.jsx       → History list + similarity + export
-│   └── Toggle.jsx              → Reusable spring-animated toggle switch
-├── utils/
-│   ├── generators.js           → All password generation algorithms + breach check
-│   ├── strength.js             → Entropy, crack time, Levenshtein distance
-│   └── translations.js         → All UI strings (EN + TR)
-├── PasswordGenerator.jsx       → Main component — assembles everything
-├── App.jsx                     → App entry point
-└── index.css                   → Global styles + sun-moon CSS animation
+password-generator/
+├── assets/
+│   └── icon.svg                → README icon
+├── src/
+│   ├── components/
+│   │   ├── PassphraseMode.jsx      → Word count, separator, language, toggles
+│   │   ├── PasswordDisplay.jsx     → Password output box with rolling animation
+│   │   ├── PronounceableMode.jsx   → Length slider + hint text
+│   │   ├── RandomMode.jsx          → Length slider + character toggles
+│   │   ├── RecentSection.jsx       → History list + similarity + export
+│   │   ├── StrengthBar.jsx         → Color-coded bar + entropy + crack time
+│   │   └── Toggle.jsx              → Reusable spring-animated toggle switch
+│   ├── utils/
+│   │   ├── generators.js           → All password generation algorithms + breach check
+│   │   ├── strength.js             → Entropy, crack time, Levenshtein distance
+│   │   └── translations.js         → All UI strings (EN + TR)
+│   ├── App.css                     → App-level styles (empty)
+│   ├── App.jsx                     → App entry point
+│   ├── index.css                   → Global styles + sun-moon CSS animation
+│   ├── main.jsx                    → React DOM render entry
+│   └── PasswordGenerator.jsx       → Main component — assembles everything
+├── .gitignore
+├── eslint.config.js
+├── index.html                      → HTML shell
+├── LICENSE
+├── package.json
+├── README.md
+└── vite.config.js                  → Vite + GitHub Pages config
 ```
 
 ---
