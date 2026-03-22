@@ -4,7 +4,7 @@ import { calcEntropy, getCrackTime, getStrength } from "./utils/strength";
 import PasswordDisplay from "./components/PasswordDisplay";
 import StrengthBar from "./components/StrengthBar";
 import RandomMode from "./components/RandomMode";
-import { generateRandom, generatePronounceable, generatePassphrase } from "./utils/generators";
+import { generateRandom, generatePronounceable, generatePassphrase, isCommonPassword } from "./utils/generators";
 import PronounceableMode from "./components/PronounceableMode";
 import PassphraseMode from "./components/PassphraseMode";
 
@@ -380,7 +380,48 @@ export default function PasswordGenerator() {
             theme={t}
           />
         )}
-
+        
+        {/* Breach Warning */}
+        {password && isCommonPassword(password) && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: "12px 14px",
+              background: isDark ? "#1c1008" : "#fef2f2",
+              border: `1px solid ${isDark ? "#78350f" : "#fecaca"}`,
+              borderRadius: 6,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1 }}>⚠️</span>
+            <div>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 12,
+                  color: "#ef4444",
+                  fontFamily: "inherit",
+                }}
+              >
+                {txt.breachTitle}
+              </div>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: isDark ? "#fbbf24" : "#991b1b",
+                  marginTop: 4,
+                  lineHeight: 1.4,
+                  fontFamily: "inherit",
+                }}
+              >
+                {txt.breachMessage}
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Buttons */}
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button

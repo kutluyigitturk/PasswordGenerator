@@ -1,3 +1,23 @@
+const COMMON_PASSWORDS = new Set([
+  "123456","password","12345678","qwerty","abc123","111111","1234567",
+  "iloveyou","123123","admin","letmein","welcome","monkey","dragon",
+  "master","1234567890","password1","123456789","trustno1","sunshine",
+  "princess","football","charlie","shadow","michael","654321","baseball",
+  "superman","batman","access","hello","login","passw0rd","starwars",
+  "google","whatever","freedom","qwerty123","password123","1q2w3e4r"
+]);
+
+export function isCommonPassword(pw) {
+  const lower = pw.toLowerCase();
+  // Direct match
+  if (COMMON_PASSWORDS.has(lower)) return true;
+  // Repeated characters like "aaaaaa"
+  if (/^(.)\1+$/.test(pw)) return true;
+  // Sequential numbers like "123456"
+  if (/^(012|123|234|345|456|567|678|789|0123|1234|2345|3456|4567|5678|6789)+\d*$/.test(pw)) return true;
+  return false;
+}
+
 const CHARSETS = {
   upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
   lower: "abcdefghijklmnopqrstuvwxyz",

@@ -40,6 +40,8 @@ export const translations = {
     wordLang: "Word Language",
     capitalize: "Capitalize first letter",
     addNumber: "Add number at end",
+    breachTitle: "Common Password Detected!",
+    breachMessage: "This password or a similar pattern is frequently found in data breaches. Please generate a new one.",
   },
   tr: {
     title: "Şifre Oluşturucu",
@@ -82,5 +84,7 @@ export const translations = {
     wordLang: "Kelime Dili",
     capitalize: "Baş harfi büyük",
     addNumber: "Sonuna sayı ekle",
+    breachTitle: "Yaygın Şifre Tespit Edildi!",
+    breachMessage: "Bu şifre veya benzeri, veri sızıntılarında sıkça görülüyor. Lütfen yeni bir şifre üretin.",
   },
 };
