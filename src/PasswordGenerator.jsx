@@ -7,6 +7,7 @@ import RandomMode from "./components/RandomMode";
 import { generateRandom, generatePronounceable, generatePassphrase, isCommonPassword } from "./utils/generators";
 import PronounceableMode from "./components/PronounceableMode";
 import PassphraseMode from "./components/PassphraseMode";
+import RecentSection from "./components/RecentSection";
 
 // ═══════════════════════════════════════════════════════════
 // PASSWORD MODES
@@ -54,6 +55,8 @@ export default function PasswordGenerator() {
     addNumber: true,
     lang: "en",
   });
+
+  const [history, setHistory] = useState([]);
 
   const txt = translations[lang];
 
@@ -129,6 +132,13 @@ export default function PasswordGenerator() {
         setDisplayPw(newPw);
         setPassword(newPw);
         setAnimating(false);
+
+        // Add to history
+        setHistory((h) => {
+          const next = [{ pw: newPw, mode, time: Date.now() }, ...h];
+          return next.slice(0, 50);
+        });
+
         return;
       }
       const revealed = Math.floor((frame / maxFrames) * newPw.length);
@@ -421,7 +431,7 @@ export default function PasswordGenerator() {
             </div>
           </div>
         )}
-        
+
         {/* Buttons */}
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button
@@ -492,6 +502,17 @@ export default function PasswordGenerator() {
             theme={t}
           />
         )}
+
+        {/* Divider */}
+        <div style={{ height: 1, background: t.border, margin: "20px 0" }} />
+
+        {/* Recent Section */}
+        <RecentSection
+          history={history}
+          setHistory={setHistory}
+          txt={txt}
+          theme={t}
+        />
       </div>
 
       {/* Google Fonts */}

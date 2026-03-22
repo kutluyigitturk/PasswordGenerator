@@ -29,3 +29,27 @@ export function getStrength(ent, txt) {
   if (ent < 70) return { label: txt.strength.strong, color: "#22c55e", pct: 75 };
   return { label: txt.strength.veryStrong, color: "#059669", pct: 100 };
 }
+
+export function levenshtein(a, b) {
+  const m = Array.from({ length: a.length + 1 }, (_, i) =>
+    Array.from({ length: b.length + 1 }, (_, j) =>
+      i === 0 ? j : j === 0 ? i : 0
+    )
+  );
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      m[i][j] =
+        a[i - 1] === b[j - 1]
+          ? m[i - 1][j - 1]
+          : 1 + Math.min(m[i - 1][j], m[i][j - 1], m[i - 1][j - 1]);
+    }
+  }
+  return m[a.length][b.length];
+}
+
+export function similarityScore(a, b) {
+  if (!a || !b) return 0;
+  return Math.round(
+    (1 - levenshtein(a, b) / Math.max(a.length, b.length)) * 100
+  );
+}
