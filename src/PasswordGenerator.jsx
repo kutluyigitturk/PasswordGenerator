@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
 
 // ═══════════════════════════════════════════════════════════
-// TRANSLATIONS — All strings managed from one place
+// TRANSLATIONS
 // ═══════════════════════════════════════════════════════════
 
 const translations = {
@@ -12,6 +13,34 @@ const translations = {
     generate: "Generate",
     copy: "Copy",
     copied: "Copied!",
+    length: "Length",
+    uppercase: "Uppercase",
+    lowercase: "Lowercase",
+    numbers: "Numbers",
+    symbols: "Symbols",
+    excludeSimilar: "Exclude similar",
+    excludeSimilarHint: "0O1lI",
+    mustContain: "Must contain",
+    mustContainHint: "At least 1 of each",
+    strength: {
+      veryWeak: "Very Weak",
+      weak: "Weak",
+      fair: "Fair",
+      strong: "Strong",
+      veryStrong: "Very Strong",
+    },
+    crackTime: "Crack time",
+    entropy: "Entropy",
+    instant: "Instantly",
+    seconds: "sec",
+    minutes: "min",
+    hours: "hours",
+    days: "days",
+    months: "months",
+    years: "years",
+    centuries: "centuries",
+    kCenturies: "K centuries",
+    beyondLifetime: "Beyond universe lifetime",
   },
   tr: {
     title: "Şifre Oluşturucu",
@@ -20,6 +49,34 @@ const translations = {
     generate: "Oluştur",
     copy: "Kopyala",
     copied: "Kopyalandı!",
+    length: "Uzunluk",
+    uppercase: "Büyük harf",
+    lowercase: "Küçük harf",
+    numbers: "Rakam",
+    symbols: "Sembol",
+    excludeSimilar: "Benzerleri çıkar",
+    excludeSimilarHint: "0O1lI",
+    mustContain: "Zorunlu içerik",
+    mustContainHint: "Her birinden en az 1",
+    strength: {
+      veryWeak: "Çok Zayıf",
+      weak: "Zayıf",
+      fair: "Orta",
+      strong: "Güçlü",
+      veryStrong: "Çok Güçlü",
+    },
+    crackTime: "Kırılma süresi",
+    entropy: "Entropi",
+    instant: "Anında",
+    seconds: "sn",
+    minutes: "dk",
+    hours: "saat",
+    days: "gün",
+    months: "ay",
+    years: "yıl",
+    centuries: "yüzyıl",
+    kCenturies: "K yüzyıl",
+    beyondLifetime: "Evrenin ömründen uzun",
   },
 };
 
@@ -32,6 +89,149 @@ const modes = [
   { key: "pronounceable", label: "Pronounceable" },
   { key: "passphrase", label: "Passphrase" },
 ];
+
+// ═══════════════════════════════════════════════════════════
+// CHARSETS
+// ═══════════════════════════════════════════════════════════
+
+const CHARSETS = {
+  upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+  lower: "abcdefghijklmnopqrstuvwxyz",
+  numbers: "0123456789",
+  symbols: "!@#$%^&*()_+-=[]{}|;:,.<>?",
+  ambiguous: "0O1lI",
+};
+
+// ═══════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+
+function calcEntropy(pw) {
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-Z]/.test(pw)) pool += 26;
+  if (/[0-9]/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) pool += 33;
+  return pool ? pw.length * Math.log2(pool) : 0;
+}
+
+function getCrackTime(ent, txt) {
+  const s = Math.pow(2, ent) / 1e10;
+  if (s < 0.001) return txt.instant;
+  if (s < 1) return `< 1 ${txt.seconds}`;
+  if (s < 60) return `${Math.round(s)} ${txt.seconds}`;
+  if (s < 3600) return `${Math.round(s / 60)} ${txt.minutes}`;
+  if (s < 86400) return `${Math.round(s / 3600)} ${txt.hours}`;
+  if (s < 2592000) return `${Math.round(s / 86400)} ${txt.days}`;
+  if (s < 31536000) return `${Math.round(s / 2592000)} ${txt.months}`;
+  if (s < 3153600000) return `${Math.round(s / 31536000)} ${txt.years}`;
+  if (s < 3.1536e13) return `${Math.round(s / 3153600000)} ${txt.centuries}`;
+  if (s < 3.1536e16) return `${(s / 3.1536e13).toFixed(0)} ${txt.kCenturies}`;
+  return txt.beyondLifetime;
+}
+
+function getStrength(ent, txt) {
+  if (ent < 28) return { label: txt.strength.veryWeak, color: "#ef4444", pct: 10 };
+  if (ent < 36) return { label: txt.strength.weak, color: "#f97316", pct: 25 };
+  if (ent < 50) return { label: txt.strength.fair, color: "#eab308", pct: 50 };
+  if (ent < 70) return { label: txt.strength.strong, color: "#22c55e", pct: 75 };
+  return { label: txt.strength.veryStrong, color: "#059669", pct: 100 };
+}
+
+function generateRandom(len, opts) {
+  let pool = "";
+  const required = [];
+  if (opts.upper) { pool += CHARSETS.upper; required.push(CHARSETS.upper); }
+  if (opts.lower) { pool += CHARSETS.lower; required.push(CHARSETS.lower); }
+  if (opts.numbers) { pool += CHARSETS.numbers; required.push(CHARSETS.numbers); }
+  if (opts.symbols) { pool += CHARSETS.symbols; required.push(CHARSETS.symbols); }
+  if (opts.excludeSimilar) {
+    pool = [...pool].filter((c) => !CHARSETS.ambiguous.includes(c)).join("");
+  }
+  if (!pool) return "enable-at-least-one";
+
+  let result;
+  let attempts = 0;
+  do {
+    result = Array.from({ length: len }, () =>
+      pool[Math.floor(Math.random() * pool.length)]
+    ).join("");
+    attempts++;
+  } while (
+    opts.mustContain &&
+    required.length > 0 &&
+    !required.every((s) => [...result].some((c) => s.includes(c))) &&
+    attempts < 100
+  );
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOGGLE COMPONENT (defined outside to preserve animation)
+// ═══════════════════════════════════════════════════════════
+
+function Toggle({ on, onToggle, label, hint, theme }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "8px 0",
+      }}
+    >
+      <div>
+        <span style={{ fontSize: 12, fontWeight: 500, color: theme.text }}>{label}</span>
+        {hint && (
+          <span
+            style={{
+              fontSize: 10,
+              color: theme.mutedFg,
+              marginLeft: 6,
+              fontFamily: "inherit",
+            }}
+          >
+            {hint}
+          </span>
+        )}
+      </div>
+      <button
+        onClick={onToggle}
+        style={{
+          width: 44,
+          height: 24,
+          borderRadius: 12,
+          background: on ? theme.toggleAccent : theme.muted,
+          border: `1px solid ${on ? theme.toggleAccent : theme.border}`,
+          cursor: "pointer",
+          position: "relative",
+          transition: "background 0.3s ease, border 0.3s ease",
+          padding: 2,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: on ? "flex-end" : "flex-start",
+        }}
+      >
+        <motion.div
+          layout
+          transition={{
+            type: "spring",
+            stiffness: 700,
+            damping: 30,
+          }}
+          style={{
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: "#fff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+          }}
+        />
+      </button>
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -47,10 +247,19 @@ export default function PasswordGenerator() {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState("en");
 
-  // Active language strings shortcut
+  // Password settings
+  const [length, setLength] = useState(16);
+  const [upper, setUpper] = useState(true);
+  const [lower, setLower] = useState(true);
+  const [numbers, setNumbers] = useState(true);
+  const [symbols, setSymbols] = useState(true);
+  const [excludeSimilar, setExcludeSimilar] = useState(false);
+  const [mustContain, setMustContain] = useState(true);
+
+  // Active language strings
   const txt = translations[lang];
 
-  // Add/remove .dark class on <html> for CSS animations
+  // Add/remove .dark class on <html>
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -60,7 +269,7 @@ export default function PasswordGenerator() {
   }, [isDark]);
 
   // ═══════════════════════════════════════════════════════════
-  // THEME — Mono (21st.dev) dark & light
+  // THEME
   // ═══════════════════════════════════════════════════════════
 
   const t = isDark
@@ -75,6 +284,7 @@ export default function PasswordGenerator() {
         text: "#fafafa",
         accent: "#404040",
         accentFg: "#fafafa",
+        toggleAccent: "#FCA5A5",
       }
     : {
         bg: "#ffffff",
@@ -87,21 +297,26 @@ export default function PasswordGenerator() {
         text: "#0a0a0a",
         accent: "#404040",
         accentFg: "#fafafa",
+        toggleAccent: "#B91C1C",
       };
 
   // ═══════════════════════════════════════════════════════════
-  // PASSWORD GENERATION (random only for now)
+  // PASSWORD GENERATION
   // ═══════════════════════════════════════════════════════════
 
   const generate = useCallback(() => {
-    const chars =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    const len = 16;
-    const newPw = Array.from({ length: len }, () =>
-      chars[Math.floor(Math.random() * chars.length)]
-    ).join("");
+    const newPw = generateRandom(length, {
+      upper,
+      lower,
+      numbers,
+      symbols,
+      excludeSimilar,
+      mustContain,
+    });
 
     // Rolling animation
+    const chars =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     setAnimating(true);
     let frame = 0;
     const maxFrames = 10;
@@ -124,7 +339,7 @@ export default function PasswordGenerator() {
         ).join("");
       setDisplayPw(scrambled);
     }, 40);
-  }, []);
+  }, [length, upper, lower, numbers, symbols, excludeSimilar, mustContain]);
 
   // Copy to clipboard
   const copy = useCallback(() => {
@@ -133,6 +348,11 @@ export default function PasswordGenerator() {
       setTimeout(() => setCopied(false), 1500);
     });
   }, [password]);
+
+  // Strength calculations
+  const ent = calcEntropy(password);
+  const str = getStrength(ent, txt);
+  const crack = getCrackTime(ent, txt);
 
   // ═══════════════════════════════════════════════════════════
   // RENDER
@@ -274,7 +494,6 @@ export default function PasswordGenerator() {
               title="Toggle language"
             >
               <div style={{ position: "relative", width: "100%", height: "100%" }}>
-                {/* TR */}
                 <span
                   style={{
                     position: "absolute",
@@ -291,7 +510,6 @@ export default function PasswordGenerator() {
                 >
                   TR
                 </span>
-                {/* EN */}
                 <span
                   style={{
                     position: "absolute",
@@ -376,12 +594,54 @@ export default function PasswordGenerator() {
           </span>
         </div>
 
+        {/* Strength Bar */}
+        {password && (
+          <div style={{ marginTop: 12 }}>
+            <div
+              style={{
+                height: 4,
+                borderRadius: 2,
+                background: t.muted,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${str.pct}%`,
+                  background: str.color,
+                  borderRadius: 2,
+                  transition: "all 0.5s ease",
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: 6,
+                fontSize: 10,
+                color: t.mutedFg,
+              }}
+            >
+              <span>
+                <span style={{ color: str.color, fontWeight: 600 }}>{str.label}</span>
+                {" · "}
+                {txt.entropy}: {Math.round(ent)} bit
+              </span>
+              <span>
+                {txt.crackTime}: {crack}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Buttons */}
         <div
           style={{
             display: "flex",
             gap: 8,
-            marginTop: 12,
+            marginTop: 16,
           }}
         >
           <button
@@ -420,6 +680,101 @@ export default function PasswordGenerator() {
           >
             {copied ? txt.copied : txt.copy}
           </button>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: t.border, margin: "20px 0" }} />
+
+        {/* Length Slider */}
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <span style={{ fontSize: 12, fontWeight: 500, color: t.text }}>
+              {txt.length}
+            </span>
+            <span
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: t.text,
+                fontFamily: "inherit",
+              }}
+            >
+              {length}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={4}
+            max={64}
+            value={length}
+            onChange={(e) => setLength(+e.target.value)}
+            style={{
+              width: "100%",
+              accentColor: t.toggleAccent,
+              height: 4,
+              cursor: "pointer",
+            }}
+          />
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: t.border, margin: "16px 0" }} />
+
+        {/* Toggle Settings */}
+        <div>
+          <Toggle
+            on={upper}
+            onToggle={() => setUpper(!upper)}
+            label={txt.uppercase}
+            hint="A-Z"
+            theme={t}
+          />
+          <Toggle
+            on={lower}
+            onToggle={() => setLower(!lower)}
+            label={txt.lowercase}
+            hint="a-z"
+            theme={t}
+          />
+          <Toggle
+            on={numbers}
+            onToggle={() => setNumbers(!numbers)}
+            label={txt.numbers}
+            hint="0-9"
+            theme={t}
+          />
+          <Toggle
+            on={symbols}
+            onToggle={() => setSymbols(!symbols)}
+            label={txt.symbols}
+            hint="!@#$"
+            theme={t}
+          />
+
+          {/* Divider */}
+          <div style={{ height: 1, background: t.border, margin: "8px 0" }} />
+
+          <Toggle
+            on={excludeSimilar}
+            onToggle={() => setExcludeSimilar(!excludeSimilar)}
+            label={txt.excludeSimilar}
+            hint={txt.excludeSimilarHint}
+            theme={t}
+          />
+          <Toggle
+            on={mustContain}
+            onToggle={() => setMustContain(!mustContain)}
+            label={txt.mustContain}
+            hint={txt.mustContainHint}
+            theme={t}
+          />
         </div>
       </div>
 
