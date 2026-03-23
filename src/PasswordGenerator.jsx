@@ -64,13 +64,6 @@ export default function PasswordGenerator() {
   const txt = translations[lang];
 
   useEffect(() => {
-    setPassphraseSettings((prev) => ({
-      ...prev,
-      lang,
-    }));
-  }, [lang]);
-
-  useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
     } else {
@@ -124,10 +117,7 @@ export default function PasswordGenerator() {
       newPw = generatePronounceable(pronounceableSettings.length, pronounceableSettings);
     }
     if (mode === "passphrase") {
-      newPw = generatePassphrase({
-        ...passphraseSettings,
-        lang: lang, // 🔥 GLOBAL LANG’I ZORLA
-      });
+      newPw = generatePassphrase(passphraseSettings);
     }
 
     // Rolling animation
