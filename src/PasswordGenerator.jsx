@@ -8,6 +8,7 @@ import { generateRandom, generatePronounceable, generatePassphrase, isCommonPass
 import PronounceableMode from "./components/PronounceableMode";
 import PassphraseMode from "./components/PassphraseMode";
 import RecentSection from "./components/RecentSection";
+import BGPattern from "./components/BGPattern";
 
 // ═══════════════════════════════════════════════════════════
 // PASSWORD MODES
@@ -179,8 +180,16 @@ export default function PasswordGenerator() {
         fontFamily: "'Geist Mono', monospace",
         color: t.text,
         transition: "background 0.4s ease",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Background Dots Pattern */}
+      <BGPattern
+        size={24}
+        fill={isDark ? "#333333" : "#c0c0c0"}
+        isDark={isDark}
+      />
       <div
         style={{
           width: "100%",
@@ -190,6 +199,8 @@ export default function PasswordGenerator() {
           borderRadius: 8,
           padding: "32px 24px",
           transition: "all 0.4s ease",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         {/* Header */}
