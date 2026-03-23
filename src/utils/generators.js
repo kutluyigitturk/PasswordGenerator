@@ -54,19 +54,72 @@ export function generateRandom(len, opts) {
   return result;
 }
 
-export function generatePronounceable(len) {
-  const consonants = "bcdfghjklmnprstvwz";
-  const vowels = "aeiou";
-  let result = "";
-  let useConsonant = true;
+export function generatePronounceable(len, opts = {}) {
+  // Common English syllables — feel natural when combined
+  const syllables = [
+    "ba","be","bi","bo","bu","da","de","di","do","du",
+    "fa","fe","fi","fo","fu","ga","ge","gi","go","gu",
+    "ka","ke","ki","ko","ku","la","le","li","lo","lu",
+    "ma","me","mi","mo","mu","na","ne","ni","no","nu",
+    "pa","pe","pi","po","pu","ra","re","ri","ro","ru",
+    "sa","se","si","so","su","ta","te","ti","to","tu",
+    "va","ve","vi","vo","vu","za","ze","zi","zo","zu",
+    "ber","cal","der","fen","ger","hal","jen","kel","ler","mer",
+    "ner","per","ser","ter","ver","wal","zel",
+    "bra","cre","dri","fro","gra","pre","pri","pro","tra","tri",
+    "ble","cle","dle","fle","gle","ple","tle",
+    "tion","sion","ment","ness","ful","ing","ble","ous",
+    "con","dis","com","per","pre","pro","mis","ven",
+    "tal","kin","den","man","son","ton","ber","lin",
+    "van","ran","ban","can","dan","fan","lan","pan",
+    "mor","cor","dor","for","nor","tor","vor",
+    "ark","ork","irk","erk","urk",
+    "alt","olt","ilt","elt","ult",
+    "and","end","ind","ond","und",
+    "ant","ent","int","ont","unt",
+    "ard","ord","ird","erd","urd"
+  ];
 
+  const vowelToNum = { a: "4", e: "3", i: "1", o: "0", u: "9" };
+
+  // Build word from syllables until we reach desired length
+  let result = "";
   while (result.length < len) {
-    const pool = useConsonant ? consonants : vowels;
-    result += pool[Math.floor(Math.random() * pool.length)];
-    useConsonant = !useConsonant;
+    const syl = syllables[Math.floor(Math.random() * syllables.length)];
+    if (result.length + syl.length <= len + 2) {
+      result += syl;
+    }
+  }
+  result = result.slice(0, len);
+
+  // Split into array for modifications
+  let chars = result.split("");
+
+  // Random capitalize
+  if (opts.capitalize) {
+    // Always capitalize first letter
+    chars[0] = chars[0].toUpperCase();
+    // Randomly capitalize some syllable starts
+    for (let i = 2; i < chars.length; i++) {
+      if (/[bcdfghjklmnprstvwz]/.test(chars[i]) && Math.random() > 0.65) {
+        chars[i] = chars[i].toUpperCase();
+      }
+    }
   }
 
-  return result.slice(0, len);
+  // Insert numbers: replace some vowels with look-alike numbers
+  if (opts.addNumbers) {
+    let replaced = 0;
+    for (let i = 0; i < chars.length; i++) {
+      const lower = chars[i].toLowerCase();
+      if (vowelToNum[lower] && Math.random() > 0.6 && replaced < 3) {
+        chars[i] = vowelToNum[lower];
+        replaced++;
+      }
+    }
+  }
+
+  return chars.join("");
 }
 
 const EN_WORDS = [

@@ -47,6 +47,8 @@ export default function PasswordGenerator() {
 
   const [pronounceableSettings, setPronounceableSettings] = useState({
     length: 12,
+    capitalize: true,
+    addNumbers: true,
   });
 
   const [passphraseSettings, setPassphraseSettings] = useState({
@@ -112,7 +114,7 @@ export default function PasswordGenerator() {
       newPw = generateRandom(randomSettings.length, randomSettings);
     }
     if (mode === "pronounceable") {
-      newPw = generatePronounceable(pronounceableSettings.length);
+      newPw = generatePronounceable(pronounceableSettings.length, pronounceableSettings);
     }
     if (mode === "passphrase") {
       newPw = generatePassphrase(passphraseSettings);
@@ -150,7 +152,7 @@ export default function PasswordGenerator() {
         ).join("");
       setDisplayPw(scrambled);
     }, 40);
-  }, [mode, randomSettings]);
+  }, [mode, randomSettings, pronounceableSettings, passphraseSettings]);
 
   const copy = useCallback(() => {
     navigator.clipboard.writeText(password).then(() => {
