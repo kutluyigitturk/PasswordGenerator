@@ -30,10 +30,9 @@ export default function StrengthBar({ strength, entropy, crackTime, txt, theme }
       >
         <span>
           <span style={{ color: strength.color, fontWeight: 600 }}>{strength.label}</span>
-          {" · "}
-          {txt.entropy}: {Math.round(entropy)} bit
+          {" · "}{txt.entropy}: {Math.round(entropy)} bit
         </span>
-        <span>
+        <span style={{ whiteSpace: "nowrap" }}>
           {txt.crackTime}: {crackTime}
         </span>
       </div>

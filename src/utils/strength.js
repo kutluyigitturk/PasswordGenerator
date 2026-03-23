@@ -17,9 +17,15 @@ export function getCrackTime(ent, txt) {
   if (s < 2592000) return `${Math.round(s / 86400)} ${txt.days}`;
   if (s < 31536000) return `${Math.round(s / 2592000)} ${txt.months}`;
   if (s < 3153600000) return `${Math.round(s / 31536000)} ${txt.years}`;
-  if (s < 3.1536e13) return `${Math.round(s / 3153600000)} ${txt.centuries}`;
-  if (s < 3.1536e16) return `${(s / 3.1536e13).toFixed(0)} ${txt.kCenturies}`;
-  return txt.beyondLifetime;
+
+  const centuries = s / 3153600000;
+  if (centuries < 1e3) return `${Math.round(centuries)} ${txt.centuries}`;
+  if (centuries < 1e6) return `${(centuries / 1e3).toFixed(0)}K ${txt.centuries}`;
+  if (centuries < 1e9) return `${(centuries / 1e6).toFixed(0)}M ${txt.centuries}`;
+  if (centuries < 1e12) return `${(centuries / 1e9).toFixed(0)}B ${txt.centuries}`;
+  if (centuries < 1e15) return `${(centuries / 1e12).toFixed(0)}T ${txt.centuries}`;
+  if (centuries < 1e18) return `${(centuries / 1e15).toFixed(0)}Q ${txt.centuries}`;
+  return `${(centuries / 1e18).toFixed(0)}Qi ${txt.centuries}`;
 }
 
 export function getStrength(ent, txt) {
