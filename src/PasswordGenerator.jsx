@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { translations } from "./utils/translations";
-import { calcEntropy, getCrackTime, getStrength } from "./utils/strength";
+import { calcEntropy, getCrackTime, getStrength, detectPatterns } from "./utils/strength";
 import PasswordDisplay from "./components/PasswordDisplay";
 import StrengthBar from "./components/StrengthBar";
 import RandomMode from "./components/RandomMode";
@@ -167,7 +167,8 @@ export default function PasswordGenerator() {
   // Strength calculations — test mode uses user's typed password
   const activePassword = mode === "test" ? testPassword : password;
   const ent = calcEntropy(activePassword);
-  const str = getStrength(ent, txt);
+  const patterns = detectPatterns(activePassword);
+  const str = getStrength(ent, txt, patterns);
   const crack = getCrackTime(ent, txt);
 
   // ═══════════════════════════════════════════════════════════
@@ -407,6 +408,7 @@ export default function PasswordGenerator() {
             crackTime={crack}
             txt={txt}
             theme={t}
+            patterns={patterns}
           />
         )}
 

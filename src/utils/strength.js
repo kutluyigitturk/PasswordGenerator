@@ -1,3 +1,53 @@
+export function detectPatterns(pw) {
+  const warnings = [];
+
+  if (!pw || pw.length < 2) return warnings;
+
+  // 1. Too few unique characters
+  const unique = new Set(pw).size;
+  const ratio = unique / pw.length;
+  if (ratio < 0.3) {
+    warnings.push({ key: "lowUnique", severity: "high" });
+  }
+
+  // 2. Repeating groups (asd asd asd)
+  for (let len = 2; len <= Math.floor(pw.length / 2); len++) {
+    const chunk = pw.slice(0, len);
+    const repeated = chunk.repeat(Math.ceil(pw.length / len)).slice(0, pw.length);
+    if (repeated === pw) {
+      warnings.push({ key: "repeatingGroup", severity: "high" });
+      break;
+    }
+  }
+
+  // 3. Keyboard walk patterns
+  const walks = ["qwerty","asdfgh","zxcvbn","qwertz","asdf","zxcv","1234567890"];
+  const lower = pw.toLowerCase();
+  for (const walk of walks) {
+    if (lower.includes(walk) || lower.includes(walk.split("").reverse().join(""))) {
+      warnings.push({ key: "keyboardWalk", severity: "medium" });
+      break;
+    }
+  }
+
+  // 4. All same character
+  if (/^(.)\1+$/.test(pw)) {
+    warnings.push({ key: "allSame", severity: "high" });
+  }
+
+  // 5. Only one character type used with long password
+  const hasLower = /[a-z]/.test(pw);
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasNum = /[0-9]/.test(pw);
+  const hasSym = /[^a-zA-Z0-9]/.test(pw);
+  const typeCount = [hasLower, hasUpper, hasNum, hasSym].filter(Boolean).length;
+  if (pw.length > 8 && typeCount === 1) {
+    warnings.push({ key: "singleType", severity: "low" });
+  }
+
+  return warnings;
+}
+
 export function calcEntropy(pw) {
   let pool = 0;
   if (/[a-z]/.test(pw)) pool += 26;
@@ -26,12 +76,30 @@ export function getCrackTime(ent, txt) {
   return txt.beyondLifetime;
 }
 
-export function getStrength(ent, txt) {
-  if (ent < 28) return { label: txt.strength.veryWeak, color: "#ef4444", pct: 10 };
-  if (ent < 36) return { label: txt.strength.weak, color: "#f97316", pct: 25 };
-  if (ent < 50) return { label: txt.strength.fair, color: "#eab308", pct: 50 };
-  if (ent < 70) return { label: txt.strength.strong, color: "#22c55e", pct: 75 };
-  return { label: txt.strength.veryStrong, color: "#059669", pct: 100 };
+export function getStrength(ent, txt, patterns = []) {
+  // High severity patterns cap strength
+  const hasHigh = patterns.some((p) => p.severity === "high");
+  const hasMedium = patterns.some((p) => p.severity === "medium");
+
+  if (hasHigh) {
+    return { label: txt.strength.veryWeak, color: "#ef4444", pct: 10 };
+  }
+
+  let result;
+  if (ent < 28) result = { label: txt.strength.veryWeak, color: "#ef4444", pct: 10 };
+  else if (ent < 36) result = { label: txt.strength.weak, color: "#f97316", pct: 25 };
+  else if (ent < 50) result = { label: txt.strength.fair, color: "#eab308", pct: 50 };
+  else if (ent < 70) result = { label: txt.strength.strong, color: "#22c55e", pct: 75 };
+  else result = { label: txt.strength.veryStrong, color: "#059669", pct: 100 };
+
+  // Medium severity drops one level
+  if (hasMedium && result.pct > 25) {
+    if (result.pct === 100) return { label: txt.strength.strong, color: "#22c55e", pct: 75 };
+    if (result.pct === 75) return { label: txt.strength.fair, color: "#eab308", pct: 50 };
+    if (result.pct === 50) return { label: txt.strength.weak, color: "#f97316", pct: 25 };
+  }
+
+  return result;
 }
 
 export function levenshtein(a, b) {

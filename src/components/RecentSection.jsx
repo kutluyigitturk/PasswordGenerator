@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { calcEntropy, getStrength, similarityScore } from "../utils/strength";
+import { calcEntropy, getStrength, similarityScore, detectPatterns } from "../utils/strength";
 
 export default function RecentSection({ history, setHistory, txt, theme }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -96,7 +96,8 @@ export default function RecentSection({ history, setHistory, txt, theme }) {
           ) : (
             history.slice(0, 20).map((h, i) => {
               const ent = calcEntropy(h.pw);
-              const str = getStrength(ent, txt);
+              const pat = detectPatterns(h.pw);
+              const str = getStrength(ent, txt, pat);
               const sim =
                 i > 0 ? similarityScore(h.pw, history[0].pw) : null;
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function StrengthBar({ strength, entropy, crackTime, txt, theme }) {
+export default function StrengthBar({ strength, entropy, crackTime, txt, theme, patterns = [] }) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
@@ -90,6 +90,45 @@ export default function StrengthBar({ strength, entropy, crackTime, txt, theme }
           {txt.crackTime}: {crackTime}
         </span>
       </div>
+
+      {/* Pattern Warnings */}
+      {patterns.length > 0 && (
+        <div style={{ marginTop: 8 }}>
+          {patterns.map((p, i) => (
+            <div
+              key={i}
+              style={{
+                fontSize: 10,
+                color: p.severity === "high" ? "#ef4444" : p.severity === "medium" ? "#f59e0b" : theme.mutedFg,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                marginTop: 3,
+              }}
+            >
+              <span style={{ display: "flex", alignItems: "center" }}>
+                {p.severity === "high" ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                    <path d="M12 9v4"/><path d="M12 17h.01"/>
+                  </svg>
+                ) : p.severity === "medium" ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                    <path d="M12 9v4"/><path d="M12 17h.01"/>
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 9v7"/><path d="M14 6v10"/>
+                    <circle cx="17.5" cy="12.5" r="3.5"/><circle cx="6.5" cy="12.5" r="3.5"/>
+                  </svg>
+                )}
+              </span>
+              <span>{txt.patternWarnings?.[p.key] || p.key}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
