@@ -9,6 +9,7 @@ import PronounceableMode from "./components/PronounceableMode";
 import PassphraseMode from "./components/PassphraseMode";
 import RecentSection from "./components/RecentSection";
 import BGPattern from "./components/BGPattern";
+import TestMode from "./components/TestMode";
 
 // ═══════════════════════════════════════════════════════════
 // PASSWORD MODES
@@ -18,6 +19,7 @@ const modes = [
   { key: "random", label: "Random" },
   { key: "pronounceable", label: "Pronounceable" },
   { key: "passphrase", label: "Passphrase" },
+  { key: "test", label: "Test" },
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -34,7 +36,7 @@ export default function PasswordGenerator() {
   const [isDark, setIsDark] = useState(true);
   const [lang, setLang] = useState("en");
 
-  // Random mode settings — grouped in one object
+  // Random mode settings
   const [randomSettings, setRandomSettings] = useState({
     length: 16,
     upper: true,
@@ -60,6 +62,7 @@ export default function PasswordGenerator() {
   });
 
   const [history, setHistory] = useState([]);
+  const [testPassword, setTestPassword] = useState("");
 
   const txt = translations[lang];
 
@@ -161,8 +164,9 @@ export default function PasswordGenerator() {
     });
   }, [password]);
 
-  // Strength calculations
-  const ent = calcEntropy(password);
+  // Strength calculations — test mode uses user's typed password
+  const activePassword = mode === "test" ? testPassword : password;
+  const ent = calcEntropy(activePassword);
   const str = getStrength(ent, txt);
   const crack = getCrackTime(ent, txt);
 
@@ -195,7 +199,7 @@ export default function PasswordGenerator() {
       <div
         style={{
           width: "100%",
-          maxWidth: 440,
+          maxWidth: 480,
           background: t.cardBg,
           border: `1px solid ${t.border}`,
           borderRadius: 8,
@@ -385,16 +389,18 @@ export default function PasswordGenerator() {
           ))}
         </div>
 
-        {/* Password Display */}
-        <PasswordDisplay
-          displayPw={displayPw}
-          animating={animating}
-          placeholder={txt.placeholder}
-          theme={t}
-        />
+        {/* Password Display — hidden in test mode */}
+        {mode !== "test" && (
+          <PasswordDisplay
+            displayPw={displayPw}
+            animating={animating}
+            placeholder={txt.placeholder}
+            theme={t}
+          />
+        )}
 
         {/* Strength Bar */}
-        {password && (
+        {activePassword && (
           <StrengthBar
             strength={str}
             entropy={ent}
@@ -403,9 +409,9 @@ export default function PasswordGenerator() {
             theme={t}
           />
         )}
-        
-        {/* Breach Warning */}
-        {password && isCommonPassword(password) && (
+
+        {/* Breach Warning — hidden in test mode (TestMode has its own) */}
+        {mode !== "test" && password && isCommonPassword(password) && (
           <div
             style={{
               marginTop: 12,
@@ -445,124 +451,124 @@ export default function PasswordGenerator() {
           </div>
         )}
 
-        {/* Buttons */}
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-          <button
-            onClick={generate}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "0.8";
-              e.currentTarget.style.transform = "scale(0.97)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "1";
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              border: `1px solid ${t.border}`,
-              borderRadius: 6,
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: "inherit",
-              background: t.cardFg,
-              color: t.bg,
-              transition: "all 0.2s ease",
-            }}
-          >
-            {txt.generate}
-          </button>
-          <button
-            onClick={copy}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = t.mutedFg;
-              e.currentTarget.style.transform = "scale(0.97)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = t.border;
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              border: `1px solid ${t.border}`,
-              borderRadius: 6,
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: "inherit",
-              background: "transparent",
-              color: copied ? t.text : t.mutedFg,
-              transition: "all 0.2s ease",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-            }}
-          >
-            {/* Cross-fade icon animation */}
-            <div
+        {/* Buttons — hidden in test mode */}
+        {mode !== "test" && (
+          <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+            <button
+              onClick={generate}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.8";
+                e.currentTarget.style.transform = "scale(0.97)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+                e.currentTarget.style.transform = "scale(1)";
+              }}
               style={{
-                position: "relative",
-                width: 14,
-                height: 14,
-                display: "inline-block",
+                flex: 1,
+                padding: "10px 0",
+                border: `1px solid ${t.border}`,
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                background: t.cardFg,
+                color: t.bg,
+                transition: "all 0.2s ease",
               }}
             >
-              {/* Copy icon */}
+              {txt.generate}
+            </button>
+            <button
+              onClick={copy}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = t.mutedFg;
+                e.currentTarget.style.transform = "scale(0.97)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = t.border;
+                e.currentTarget.style.transform = "scale(1)";
+              }}
+              style={{
+                flex: 1,
+                padding: "10px 0",
+                border: `1px solid ${t.border}`,
+                borderRadius: 6,
+                cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                background: "transparent",
+                color: copied ? t.text : t.mutedFg,
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+              }}
+            >
+              {/* Cross-fade icon animation */}
               <div
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  opacity: copied ? 0 : 1,
-                  transform: copied ? "scale(0.6)" : "scale(1)",
-                  transition: "opacity 150ms, transform 150ms",
+                  position: "relative",
+                  width: 14,
+                  height: 14,
+                  display: "inline-block",
                 }}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    opacity: copied ? 0 : 1,
+                    transform: copied ? "scale(0.6)" : "scale(1)",
+                    transition: "opacity 150ms, transform 150ms",
+                  }}
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              </div>
-              {/* Check icon */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  opacity: copied ? 1 : 0,
-                  transform: copied ? "scale(1)" : "scale(0.6)",
-                  transition: "opacity 400ms 150ms, transform 400ms 150ms",
-                }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    opacity: copied ? 1 : 0,
+                    transform: copied ? "scale(1)" : "scale(0.6)",
+                    transition: "opacity 400ms 150ms, transform 400ms 150ms",
+                  }}
                 >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
               </div>
-            </div>
-            {copied ? txt.copied : txt.copy}
-          </button>
-        </div>
+              {copied ? txt.copied : txt.copy}
+            </button>
+          </div>
+        )}
 
         {/* Divider */}
         <div style={{ height: 1, background: t.border, margin: "20px 0" }} />
@@ -592,6 +598,16 @@ export default function PasswordGenerator() {
             setSettings={setPassphraseSettings}
             txt={txt}
             theme={t}
+          />
+        )}
+
+        {mode === "test" && (
+          <TestMode
+            value={testPassword}
+            onChange={setTestPassword}
+            txt={txt}
+            theme={t}
+            isDark={isDark}
           />
         )}
 
