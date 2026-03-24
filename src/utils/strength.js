@@ -16,16 +16,14 @@ export function getCrackTime(ent, txt) {
   if (s < 86400) return `${Math.round(s / 3600)} ${txt.hours}`;
   if (s < 2592000) return `${Math.round(s / 86400)} ${txt.days}`;
   if (s < 31536000) return `${Math.round(s / 2592000)} ${txt.months}`;
-  if (s < 3153600000) return `${Math.round(s / 31536000)} ${txt.years}`;
 
-  const centuries = s / 3153600000;
-  if (centuries < 1e3) return `${Math.round(centuries)} ${txt.centuries}`;
-  if (centuries < 1e6) return `${(centuries / 1e3).toFixed(0)}K ${txt.centuries}`;
-  if (centuries < 1e9) return `${(centuries / 1e6).toFixed(0)}M ${txt.centuries}`;
-  if (centuries < 1e12) return `${(centuries / 1e9).toFixed(0)}B ${txt.centuries}`;
-  if (centuries < 1e15) return `${(centuries / 1e12).toFixed(0)}T ${txt.centuries}`;
-  if (centuries < 1e18) return `${(centuries / 1e15).toFixed(0)}Q ${txt.centuries}`;
-  return `${(centuries / 1e18).toFixed(0)}Qi ${txt.centuries}`;
+  const years = s / 31536000;
+  if (years < 1e3) return `${Math.round(years)} ${txt.years}`;
+  if (years < 1e6) return `~${Math.round(years / 1e3)} ${txt.thousand} ${txt.years}`;
+  if (years < 1e9) return `~${Math.round(years / 1e6)} ${txt.million} ${txt.years}`;
+  if (years < 1e12) return `~${Math.round(years / 1e9)} ${txt.billion} ${txt.years}`;
+  if (years < 1e15) return `~${Math.round(years / 1e12)} ${txt.trillion} ${txt.years}`;
+  return txt.beyondLifetime;
 }
 
 export function getStrength(ent, txt) {
