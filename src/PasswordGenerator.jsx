@@ -608,6 +608,12 @@ export default function PasswordGenerator() {
             txt={txt}
             theme={t}
             isDark={isDark}
+            onSave={(pw) => {
+              setHistory((h) => {
+                const next = [{ pw, mode: "test", time: Date.now() }, ...h];
+                return next.slice(0, 50);
+              });
+            }}
           />
         )}
 

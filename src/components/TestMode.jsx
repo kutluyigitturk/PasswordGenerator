@@ -1,6 +1,6 @@
 import { isCommonPassword } from "../utils/generators";
 
-export default function TestMode({ value, onChange, txt, theme, isDark }) {
+export default function TestMode({ value, onChange, txt, theme, isDark, onSave }) {
   const common = value && isCommonPassword(value);
 
   return (
@@ -30,6 +30,11 @@ export default function TestMode({ value, onChange, txt, theme, isDark }) {
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = theme.border;
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && value.trim()) {
+            onSave(value.trim());
+          }
         }}
       />
 
