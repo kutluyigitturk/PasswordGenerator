@@ -11,6 +11,16 @@
 
 ---
 
+## 📸 Preview
+
+<div align="center">
+
+<img src="assets/screenshot-dark.jpg" alt="Dark Theme" width="400" />
+
+</div>
+
+---
+
 <div align="center">
 
 ## 🛠️ Tech Stack
