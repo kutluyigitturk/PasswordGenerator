@@ -449,6 +449,14 @@ export default function PasswordGenerator() {
         <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
           <button
             onClick={generate}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "0.8";
+              e.currentTarget.style.transform = "scale(0.97)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "1";
+              e.currentTarget.style.transform = "scale(1)";
+            }}
             style={{
               flex: 1,
               padding: "10px 0",
@@ -460,13 +468,21 @@ export default function PasswordGenerator() {
               fontFamily: "inherit",
               background: t.cardFg,
               color: t.bg,
-              transition: "all 0.4s ease",
+              transition: "all 0.2s ease",
             }}
           >
             {txt.generate}
           </button>
           <button
             onClick={copy}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = t.mutedFg;
+              e.currentTarget.style.transform = "scale(0.97)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = t.border;
+              e.currentTarget.style.transform = "scale(1)";
+            }}
             style={{
               flex: 1,
               padding: "10px 0",
@@ -477,10 +493,73 @@ export default function PasswordGenerator() {
               fontWeight: 600,
               fontFamily: "inherit",
               background: "transparent",
-              color: t.mutedFg,
-              transition: "all 0.4s ease",
+              color: copied ? t.text : t.mutedFg,
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
             }}
           >
+            {/* Cross-fade icon animation */}
+            <div
+              style={{
+                position: "relative",
+                width: 14,
+                height: 14,
+                display: "inline-block",
+              }}
+            >
+              {/* Copy icon */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  opacity: copied ? 0 : 1,
+                  transform: copied ? "scale(0.6)" : "scale(1)",
+                  transition: "opacity 150ms, transform 150ms",
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </div>
+              {/* Check icon */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  opacity: copied ? 1 : 0,
+                  transform: copied ? "scale(1)" : "scale(0.6)",
+                  transition: "opacity 400ms 150ms, transform 400ms 150ms",
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
             {copied ? txt.copied : txt.copy}
           </button>
         </div>
