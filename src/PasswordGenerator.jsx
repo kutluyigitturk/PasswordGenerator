@@ -90,17 +90,17 @@ export default function PasswordGenerator() {
         toggleAccent: "#B91C1C",
       }
     : {
-        bg: "#ffffff",
+        bg: "#f5f5f4",
         cardBg: "#ffffff",
-        cardFg: "#0a0a0a",
+        cardFg: "#1a1a1a",
         border: "#e5e5e5",
-        input: "#e5e5e5",
-        muted: "#f5f5f5",
+        input: "#f0f0ef",
+        muted: "#ececeb",
         mutedFg: "#737373",
-        text: "#0a0a0a",
-        accent: "#404040",
+        text: "#1a1a1a",
+        accent: "#333333",
         accentFg: "#fafafa",
-        toggleAccent: "#FCA5A5",
+        toggleAccent: "#9b1313",
       };
 
   // ═══════════════════════════════════════════════════════════
